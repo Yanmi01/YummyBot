@@ -1,0 +1,8 @@
+langgraph==0.3.21
+langchain-google-genai==2.1.2
+langgraph-prebuilt==0.1.7
+gradio==5.24.0
+fastapi==0.115.12
+uvicorn==0.34.1
+python-dotenv==1.0.1
+python-multipart==0.0.20
