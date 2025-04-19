@@ -17,7 +17,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY")
+os.getenv("GOOGLE_API_KEY")
+
 class OrderState(TypedDict):
     """State representing the customer's order conversation."""
 
@@ -62,14 +63,6 @@ def chatbot(state: OrderState) -> OrderState:
     message_history = [BARISTABOT_SYSINT] + state["messages"]
     return {"messages": [llm.invoke(message_history)]}
 
-graph_builder = StateGraph(OrderState)
-
-graph_builder.add_node("chatbot", chatbot)
-
-graph_builder.add_edge(START, "chatbot")
-
-chat_graph = graph_builder.compile()
-
 # Image(chat_graph.get_graph().draw_mermaid_png())
 
 def human_node(state: OrderState) -> OrderState:
@@ -103,11 +96,6 @@ def maybe_exit_human_node(state: OrderState) -> Literal["chatbot", "__end__"]:
         return END
     else:
         return "chatbot"
-
-
-graph_builder.add_conditional_edges("human", maybe_exit_human_node)
-
-chat_with_human_graph = graph_builder.compile()
 
 # Image(chat_with_human_graph.get_graph().draw_mermaid_png())
 
@@ -188,7 +176,7 @@ def chatbot_with_tools(state: OrderState) -> OrderState:
     return defaults | state | {"messages": [new_output]}
 
 @tool
-def add_to_order(food: str, modifiers: Iterable[str]) -> str:
+def add_to_order(food: str, side_meals: Iterable[str]) -> str:
     """Adds the specified food to the customer's order, including any side dish and drink.
 
     Returns:
@@ -231,10 +219,10 @@ def order_node(state: OrderState) -> OrderState:
         if tool_call["name"] == "add_to_order":
 
             # Each order item is just a string. This is where it assembled as "food (side dish, ...)".
-            modifiers = tool_call["args"]["modifiers"]
-            modifier_str = ", ".join(modifiers) if modifiers else "no modifiers"
+            side_meals = tool_call["args"]["side_meals"]
+            modifier_str = ", ".join(side_meals) if side_meals else "no side_meals"
 
-            order.append(f'{tool_call["args"]["food item"]} ({modifier_str})')
+            order.append(f'{tool_call["args"]["food"]} ({modifier_str})')
             response = "\n".join(order)
 
         elif tool_call["name"] == "confirm_order":
@@ -346,4 +334,15 @@ graph_builder.add_edge("ordering", "chatbot")
 graph_builder.add_edge(START, "chatbot")
 graph_with_order_tools = graph_builder.compile()
 
-# Image(graph_with_order_tools.get_graph().draw_mermaid_png())
+# graph_image = graph_with_order_tools.get_graph().draw_mermaid_png()
+# with open("order_graph.png", "wb") as f:
+#     f.write(graph_image)
+
+# print("Graph visualization saved as 'order_graph.png' in the current directory")
+# import webbrowser
+# webbrowser.open("order_graph.png")
+
+config = {"recursion_limit": 100}
+state = graph_with_order_tools.invoke({"messages": []}, config)
+
+pprint(state)
