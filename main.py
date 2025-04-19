@@ -4,7 +4,6 @@ from typing_extensions import TypedDict
 from langgraph.graph.message import add_messages
 from langgraph.graph import StateGraph, START, END
 from langchain_google_genai import ChatGoogleGenerativeAI
-from IPython.display import Image, display
 from pprint import pprint
 from langchain_core.messages.ai import AIMessage
 from collections.abc import Iterable
