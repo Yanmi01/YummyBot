@@ -64,23 +64,23 @@ def chatbot(state: OrderState) -> OrderState:
 
 # Image(chat_graph.get_graph().draw_mermaid_png())
 
-# def human_node(state: OrderState) -> OrderState:
-#     """Display the last model message to the user, and receive the user's input."""
-#     last_msg = state["messages"][-1]
-#     print("Model:", last_msg.content)
+def human_node(state: OrderState) -> OrderState:
+    """Display the last model message to the user, and receive the user's input."""
+    last_msg = state["messages"][-1]
+    print("Model:", last_msg.content)
 
-#     user_input = input("User: ")
+    user_input = input("User: ")
 
-#     if user_input in {"q", "quit", "exit", "goodbye"}:
-#         state["finished"] = True
-
-#     return state | {"messages": [("user", user_input)]}
-    
-def human_node(state: OrderState, user_input: str) -> OrderState:
-    """Process user input from HTTP request"""
-    if user_input.lower() in {"q", "quit", "exit", "goodbye"}:
+    if user_input in {"q", "quit", "exit", "goodbye"}:
         state["finished"] = True
+
     return state | {"messages": [("user", user_input)]}
+    
+# def human_node(state: OrderState, user_input: str) -> OrderState:
+#     """Process user input from HTTP request"""
+#     if user_input.lower() in {"q", "quit", "exit", "goodbye"}:
+#         state["finished"] = True
+#     return state | {"messages": [("user", user_input)]}
 
 def chatbot_with_welcome_msg(state: OrderState) -> OrderState:
     """The chatbot itself. A wrapper around the model's own chat interface."""
