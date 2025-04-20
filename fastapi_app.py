@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from main import graph_with_order_tools, OrderState, WELCOME_MSG, process_human_input
+from main import graph_with_order_tools, OrderState, WELCOME_MSG
 
 app = FastAPI()
 
@@ -26,16 +26,15 @@ async def chat(request: ChatRequest):
         state = sessions[request.session_id]
         
         # Process input
-        state = process_human_input(state, request.message)
-        state = graph_with_order_tools.invoke(state)
+        state["messages"].append(("user", request.message))
+        new_state = graph_with_order_tools.invoke(state)
         
-        # Store updated state
-        sessions[request.session_id] = state
+        # Update session
+        active_sessions[request.session_id] = new_state
         
         return {
-            "response": state["messages"][-1].content,
-            "order": state["order"]
+            "response": new_state["messages"][-1].content,
+            "order": new_state["order"]
         }
-        
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        return {"error": str(e)}
