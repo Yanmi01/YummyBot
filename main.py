@@ -152,17 +152,28 @@ tool_node = ToolNode(tools)
 # Attach the tools to the model so that it knows what it can call.
 llm_with_tools = llm.bind_tools(tools)
 
-def maybe_route_to_tools(state: OrderState) -> Literal["tools", "human"]:
-    """Route between human or tool nodes, depending if a tool call is made."""
+def maybe_route_to_tools(state: OrderState) -> str:
+    """Route between chat and tool nodes if a tool call is made."""
     if not (msgs := state.get("messages", [])):
         raise ValueError(f"No messages found when parsing state: {state}")
 
-    # Only route based on the last message.
     msg = msgs[-1]
 
-    # When the chatbot returns tool_calls, route to the "tools" node.
-    if hasattr(msg, "tool_calls") and len(msg.tool_calls) > 0:
-        return "tools"
+    if state.get("finished", False):
+        # When an order is placed, exit the app. The system instruction indicates
+        # that the chatbot should say thanks and goodbye at this point, so we can exit
+        # cleanly.
+        return END
+
+    elif hasattr(msg, "tool_calls") and len(msg.tool_calls) > 0:
+        # Route to `tools` node for any automated tool calls first.
+        if any(
+            tool["name"] in tool_node.tools_by_name.keys() for tool in msg.tool_calls
+        ):
+            return "tools"
+        else:
+            return "ordering"
+
     else:
         return "human"
 
