@@ -28,7 +28,7 @@ class OrderState(TypedDict):
 
     finished: bool
 
-BARISTABOT_SYSINT = (
+YUMMYBOT_SYSINT = (
     "system",  # 'system' indicates the message is a system instruction.
     "You are YummyBot, an interactive food ordering system. A human will talk to you about the "
     "available products you have and you will answer any questions about menu items (and only about "
@@ -59,7 +59,7 @@ llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash")
 
 def chatbot(state: OrderState) -> OrderState:
     """The chatbot itself. A simple wrapper around the model's own chat interface."""
-    message_history = [BARISTABOT_SYSINT] + state["messages"]
+    message_history = [YUMMYBOT_SYSINT] + state["messages"]
     return {"messages": [llm.invoke(message_history)]}
 
 # Image(chat_graph.get_graph().draw_mermaid_png())
@@ -87,7 +87,7 @@ def chatbot_with_welcome_msg(state: OrderState) -> OrderState:
 
     if state["messages"]:
         # If there are messages, continue the conversation with the Gemini model.
-        new_output = llm.invoke([BARISTABOT_SYSINT] + state["messages"])
+        new_output = llm.invoke([YUMMYBOT_SYSINT] + state["messages"])
     else:
         # If there are no messages, start with the welcome message.
         new_output = AIMessage(content=WELCOME_MSG)
@@ -171,7 +171,7 @@ def chatbot_with_tools(state: OrderState) -> OrderState:
     defaults = {"order": [], "finished": False}
 
     if state["messages"]:
-        new_output = llm_with_tools.invoke([BARISTABOT_SYSINT] + state["messages"])
+        new_output = llm_with_tools.invoke([YUMMYBOT_SYSINT] + state["messages"])
     else:
         new_output = AIMessage(content=WELCOME_MSG)
 
@@ -205,7 +205,7 @@ def clear_order():
 
 @tool
 def place_order() -> int:
-    """Sends the order to the barista for fulfillment.
+    """Sends the order to the Chef for fulfillment.
 
     Returns:
       The estimated number of minutes until the order is ready.
