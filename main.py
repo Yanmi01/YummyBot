@@ -291,32 +291,6 @@ def order_node(state: OrderState) -> OrderState:
         )
 
     return {"messages": outbound_msgs, "order": order, "finished": order_placed}
-
-
-def maybe_route_to_tools(state: OrderState) -> str:
-    """Route between chat and tool nodes if a tool call is made."""
-    if not (msgs := state.get("messages", [])):
-        raise ValueError(f"No messages found when parsing state: {state}")
-
-    msg = msgs[-1]
-
-    if state.get("finished", False):
-        # When an order is placed, exit the app. The system instruction indicates
-        # that the chatbot should say thanks and goodbye at this point, so we can exit
-        # cleanly.
-        return END
-
-    elif hasattr(msg, "tool_calls") and len(msg.tool_calls) > 0:
-        # Route to `tools` node for any automated tool calls first.
-        if any(
-            tool["name"] in tool_node.tools_by_name.keys() for tool in msg.tool_calls
-        ):
-            return "tools"
-        else:
-            return "ordering"
-
-    else:
-        return "human"
     
     # Auto-tools will be invoked automatically by the ToolNode
 auto_tools = [get_menu]
